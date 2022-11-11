@@ -34,21 +34,15 @@ module.exports = {
         if (socials[0].discordImg === '/images/socialmedia/discord.png') {
           // if user's discord matches the discord linked on speedrun.com
           if (interaction.user.tag === socials[0].discordID) {
-            fetch(`https://www.speedrun.com/api/v1/users/${interaction.options.data[0].value}`)
-              .then(response => {
-                if (response.ok) { return response.json() } 
-                else { return Promise.reject(response) }
-              })
-              .then(data => {
-                return fetch(`https://www.speedrun.com/api/v1/users/${data.data.id}/personal-bests`)
-              })
-              .then(response => {
-                if (response.ok) { return response.json() } 
-                else { return Promise.reject(response) }
-              })
-              .then(userData => { console.log(userData) })
-              .catch(err => console.log(err))
-              
+            try {
+              let response1 = await fetch(`https://www.speedrun.com/api/v1/users/${interaction.options.data[0].value}`)
+              let data1 = await response1.json()
+              console.log(data1);
+              let response2 = await fetch(`https://www.speedrun.com/api/v1/users/${data1.data.id}/personal-bests`)
+              let data2 = await response2.json()
+              console.log(data2);
+            } catch (e) { console.log(e) }
+            
             await interaction.reply({
               content: 'Account successfully linked. Your roles have been added to your account!',
             })
