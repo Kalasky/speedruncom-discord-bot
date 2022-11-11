@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, User } = require('discord.js')
+const { SlashCommandBuilder, User, Colors } = require('discord.js')
 const axios = require('axios')
 const cheerio = require('cheerio')
 const { Client, GatewayIntentBits } = require('discord.js')
@@ -35,12 +35,41 @@ module.exports = {
           // if user's discord matches the discord linked on speedrun.com
           if (interaction.user.tag === socials[0].discordID) {
             try {
-              let response1 = await fetch(`https://www.speedrun.com/api/v1/users/${interaction.options.data[0].value}`)
-              let data1 = await response1.json()
-              console.log(data1);
-              let response2 = await fetch(`https://www.speedrun.com/api/v1/users/${data1.data.id}/personal-bests`)
-              let data2 = await response2.json()
-              console.log(data2);
+              // fetching user's profile
+              const fetchProfile = await fetch(`https://www.speedrun.com/api/v1/users/${interaction.options.data[0].value}`)
+              const data1 = await fetchProfile.json()
+              // fetch is grabbing the user's ID from the initial call then grabbing all PBs
+              const fetchPBs = await fetch(`https://www.speedrun.com/api/v1/users/${data1.data.id}/personal-bests`)
+              const data2 = await fetchPBs.json()
+              const response = data2.data
+              
+              // mapping over all user's PBs
+              const gameRoles = async () => {
+              //   const placings = response.map(async (item) => {
+                const gamesFetch = await fetch(`https://www.speedrun.com/api/v1/games/${item.run.game}`)
+                const response = await gamesFetch.json()
+                
+              //   // All games titles the user has a submitted run in
+              //   const gameTitles = response.data.names.international
+              //   let gameTitlesArr = []
+              //   gameTitles.forEach(val => {
+              //     gameTitlesArr.push(val)
+              //   })
+              //   console.log(gameTitlesArr);
+              //   // interaction.guild.roles.create({ name: `${item.place}`, color: Colors.Blue }) 
+              // })
+              
+              const gameTitles = response.data.names.international
+              const butt = []
+              gameTitles.forEach(item => {
+                // console.log(item);
+                butt.push(item)
+              })
+              console.log(butt);
+              }
+
+              gameRoles()
+            
             } catch (e) { console.log(e) }
             
             await interaction.reply({
