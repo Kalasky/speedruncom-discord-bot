@@ -46,16 +46,24 @@ module.exports = {
               // mapping over all user's PBs
               const getGameRoles = async () => {
                 // mapping over object returned from 'response' and grabbing each game ID
-                const gameNamesArr = await response.map( async item => {
-                  const gamesFetch = await fetch(`https://www.speedrun.com/api/v1/games/${item.run.game}`)
-                  const response = await gamesFetch.json()
-                  const gameNames = response.data.names.international
-                  return gameNames
+                const titlesArr = await response.map( async item => {
+                  const titlesFetch = await fetch(`https://www.speedrun.com/api/v1/games/${item.run.game}`)
+                  const response = await titlesFetch.json()
+                  const titles = response.data.names.international
+                  return titles
                 })
-                let resolved = Promise.all([...gameNamesArr]);
+                let resolved = Promise.all([...titlesArr]);
                 // without awaitResolved, the promise will be pending
                 const awaitResolved = await resolved
-                console.log(awaitResolved);
+                // new Set will implicitly remove duplicate elements
+                // convert the set back to an array
+                let uniqueTitles = [...new Set(awaitResolved)]
+
+                const mapUniqueTitles = uniqueTitles.map(item => {
+                  console.log(item)
+                  interaction.guild.roles.create({ name: `${item}`, color: Colors.Blue }) 
+                })
+                return mapUniqueTitles
               }
 
               await getGameRoles()
