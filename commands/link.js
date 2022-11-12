@@ -44,33 +44,24 @@ module.exports = {
               const response = data2.data
               
               // mapping over all user's PBs
-              const gameRoles = async () => {
-              //   const placings = response.map(async (item) => {
-                const gamesFetch = await fetch(`https://www.speedrun.com/api/v1/games/${item.run.game}`)
-                const response = await gamesFetch.json()
-                
-              //   // All games titles the user has a submitted run in
-              //   const gameTitles = response.data.names.international
-              //   let gameTitlesArr = []
-              //   gameTitles.forEach(val => {
-              //     gameTitlesArr.push(val)
-              //   })
-              //   console.log(gameTitlesArr);
-              //   // interaction.guild.roles.create({ name: `${item.place}`, color: Colors.Blue }) 
-              // })
-              
-              const gameTitles = response.data.names.international
-              const butt = []
-              gameTitles.forEach(item => {
-                // console.log(item);
-                butt.push(item)
-              })
-              console.log(butt);
+              const getGameRoles = async () => {
+                // mapping over object returned from 'response' and grabbing each game ID
+                const gameNamesArr = await response.map( async item => {
+                  const gamesFetch = await fetch(`https://www.speedrun.com/api/v1/games/${item.run.game}`)
+                  const response = await gamesFetch.json()
+                  const gameNames = response.data.names.international
+                  return gameNames
+                })
+                let resolved = Promise.all([...gameNamesArr]);
+                // without awaitResolved, the promise will be pending
+                const awaitResolved = await resolved
+                console.log(awaitResolved);
               }
 
-              gameRoles()
-            
-            } catch (e) { console.log(e) }
+              await getGameRoles()
+            } catch (e) { 
+              console.log(e) 
+            }
             
             await interaction.reply({
               content: 'Account successfully linked. Your roles have been added to your account!',
