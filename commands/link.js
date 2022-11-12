@@ -58,10 +58,46 @@ module.exports = {
                 // new Set will implicitly remove duplicate elements
                 // convert the set back to an array
                 let uniqueTitles = [...new Set(awaitResolved)]
+                
+                // guild roles-object
+                const getRoles = async () => {
+                const guildRoles = await interaction.guild.roles.cache.map(async (roles) => {
+                  const response = await roles
+                  const ids = response.id
+                  return ids
+                })
+                
+                  let resolved2 = Promise.all([...guildRoles])
+                  const awaitResolved2 = await resolved2
+                  const roleArr =  [...new Set(awaitResolved2)]
+                  // looping through array of all role ids
+                  let result = []
+                  for (let i = 0; i < roleArr.length; i++) {
+                    // removing @everyone id (guild id) from array 
+                    if (roleArr[i] === '1040957679029469208') {
+                      roleArr.splice(i, 1)
+                    }
+                    result.push(roleArr[i])
+                
+                  }    
 
-                const mapUniqueTitles = uniqueTitles.map(item => {
-                  console.log(item)
-                  interaction.guild.roles.create({ name: `${item}`, color: Colors.Blue }) 
+                }
+                await getRoles()
+
+                const mapUniqueTitles = uniqueTitles.map(async item => {
+                  // check if role already exists in guild -> returns true or false
+                  if (interaction.guild.roles.cache.some((role) => role.name === item)) {
+                    const id = await interaction.guild.members.fetch(interaction.user.id)
+                    // finding roles in guild that match categories the user runs on speedrun.com
+                    const roleName = interaction.guild.roles.cache.find(role => role.name === item)
+                    // returning id from each role
+                    id.roles.add(roleName.id)
+                  } else {
+                    const rolesCreated = await interaction.guild.roles.create({ name: `${item} Runner`, color: Colors.Blue })
+                    const id = await interaction.guild.members.fetch(interaction.user.id)
+                    // grabbing role object from the roles creates from rolesCreated
+                    id.roles.add(rolesCreated.id)
+                  }
                 })
                 return mapUniqueTitles
               }
