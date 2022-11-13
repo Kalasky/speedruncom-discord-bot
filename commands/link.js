@@ -42,7 +42,6 @@ module.exports = {
               const fetchPBs = await fetch(`https://www.speedrun.com/api/v1/users/${data1.data.id}/personal-bests`)
               const data2 = await fetchPBs.json()
               const response = data2.data
-              
               // mapping over all user's PBs
               const getGameRoles = async () => {
                 // mapping over object returned from 'response' and grabbing each game ID
@@ -66,7 +65,7 @@ module.exports = {
                   const ids = response.id
                   return ids
                 })
-                
+
                   let resolved2 = Promise.all([...guildRoles])
                   const awaitResolved2 = await resolved2
                   const roleArr =  [...new Set(awaitResolved2)]
@@ -83,33 +82,38 @@ module.exports = {
 
                 }
                 await getRoles()
-
-                const mapUniqueTitles = uniqueTitles.map(async item => {
-                  // check if role already exists in guild -> returns true or false
-                  if (interaction.guild.roles.cache.some((role) => role.name === item)) {
+              
+                for(let i = 0; i < uniqueTitles.length; i++) {
                     const id = await interaction.guild.members.fetch(interaction.user.id)
-                    // finding roles in guild that match categories the user runs on speedrun.com
-                    const roleName = interaction.guild.roles.cache.find(role => role.name === item)
-                    // returning id from each role
-                    id.roles.add(roleName.id)
-                  } else {
-                    const rolesCreated = await interaction.guild.roles.create({ name: `${item} Runner`, color: Colors.Blue })
-                    const id = await interaction.guild.members.fetch(interaction.user.id)
-                    // grabbing role object from the roles creates from rolesCreated
-                    id.roles.add(rolesCreated.id)
-                  }
-                })
-                return mapUniqueTitles
+                    // TODO: once linked, automagically check if the user has ran another category -> apply role with cron job
+                    // if user has roles -> stop process
+                    if (id.roles.cache.some(role => role.name === `${uniqueTitles[i]} Runner`)) {
+                      await interaction.reply({
+                        content: 'Your account is already linked!',
+                      })
+                      // break out of loop if the user already has roles
+                      break
+                    }
+                    // check if role already exists in guild -> returns true or false
+                    if (interaction.guild.roles.cache.some((role) => role.name === `${uniqueTitles[i]} Runner`)) {                    
+                      // finding roles in guild that match the user's category runs
+                      const rolesExist = await interaction.guild.roles.cache.find(role => role.name === `${uniqueTitles[i]} Runner`)                   
+                      // returning id from each found role
+                      id.roles.add(rolesExist.id)
+                    } else if (rolesExist == false) {
+                      console.log('rolename = false')
+                      const rolesCreated = await interaction.guild.roles.create({ name: `${uniqueTitles[i]} Runner`, color: Colors.Blue })
+                      const id = await interaction.guild.members.fetch(interaction.user.id)
+                      // grabbing role object from the roles created from rolesCreated
+                      id.roles.add(rolesCreated.id)
+                    }   
+                }
               }
 
               await getGameRoles()
             } catch (e) { 
               console.log(e) 
             }
-            
-            await interaction.reply({
-              content: 'Account successfully linked. Your roles have been added to your account!',
-            })
             
           } else if (interaction.user.tag !== socials[0].discordID) {
             await interaction.reply({

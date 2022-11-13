@@ -7,6 +7,7 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 client.commands = new Collection();
 
+
 const commandsPath = path.join(__dirname, "commands");
 const commandFiles = fs
   .readdirSync(commandsPath)
@@ -34,6 +35,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
     return;
   }
 
+  client.user.setUsername('Bosco');
+  
   try {
     await command.execute(interaction);
   } catch (error) {
