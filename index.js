@@ -1,6 +1,8 @@
 require("dotenv").config();
 const fs = require("node:fs");
 const path = require("node:path");
+const deployCommands = require("./deploy-commands")
+const mongoose = require("mongoose");
 const { Client, Collection, Events, GatewayIntentBits } = require("discord.js");
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -26,6 +28,11 @@ for (const file of commandFiles) {
   }
 }
 
+mongoose
+  .connect(process.env.MONGODB_URI)
+  .then(() => console.log("DATABASE CONNECTED"))
+  .catch((e) => console.log("DB CONNECTION ERROR: ", e));
+
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
   const command = interaction.client.commands.get(interaction.commandName);
@@ -47,6 +54,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
     });
   }
 });
+
+// deploy global commands when bot joins a new guild
+client.on(Events.GuildCreate, () => {
+  deployCommands
+})
 
 client.once(Events.ClientReady, (c) => {
   console.log(`Ready! Logged in as ${c.user.tag}`);
